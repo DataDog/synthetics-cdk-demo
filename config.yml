@@ -1,0 +1,6 @@
+- endpoint: https://www.dogfactsapi.ducnguyen.dev/api/v1/facts/?number=3
+  method: GET
+  status: 200
+  asserts:
+   - path: facts.length
+     value: 3
