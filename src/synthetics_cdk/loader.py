@@ -4,8 +4,7 @@ from cdktf_cdktf_provider_datadog import (
     SyntheticsTest,
     SyntheticsTestApiStep,
     SyntheticsTestApiStepAssertion,
-    SyntheticsTestApiStepExtractedValue,
-    SyntheticsTestApiStepExtractedValueParser,
+    SyntheticsTestApiStepAssertionTargetjsonpath,
     SyntheticsTestApiStepRequestDefinition,
     SyntheticsTestOptionsList,
     SyntheticsTestOptionsListRetry,
@@ -15,6 +14,19 @@ from cdktf_cdktf_provider_datadog import (
 def build_tests(config, stack):
     for i, test_data in enumerate(config):
         url = urlparse(test_data["endpoint"])
+        assertions = [SyntheticsTestApiStepAssertion(operator="is", target=str(test_data["status"]), type="statusCode")]
+        for assertion in test_data["asserts"]:
+            assertions.append(
+                SyntheticsTestApiStepAssertion(
+                    operator="validatesJSONPath",
+                    targetjsonpath=SyntheticsTestApiStepAssertionTargetjsonpath(
+                        jsonpath=assertion["path"],
+                        operator="is",
+                        targetvalue=str(assertion["value"]),
+                    ),
+                    type="body",
+                )
+            )
         SyntheticsTest(
             stack,
             f"synthetics_test_{url.hostname}_{i}",
@@ -40,7 +52,7 @@ def build_tests(config, stack):
                     name="step",
                     subtype="http",
                     allow_failure=False,
-                    assertion=[SyntheticsTestApiStepAssertion(operator="matches", target=str(test_data["status"]), type="statusCode")],
+                    assertion=assertions,
                     retry={"count": 5, "interval": 1000},
                     is_critical=True,
                     request_definition=SyntheticsTestApiStepRequestDefinition(
@@ -48,5 +60,5 @@ def build_tests(config, stack):
                         url=test_data["endpoint"],
                     ),
                 ),
-            ]
+            ],
         )
