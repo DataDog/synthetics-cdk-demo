@@ -4,3 +4,11 @@
   asserts:
    - path: facts.length
      value: 3
+- endpoint: https://api.sampleapis.com/coffee/hot
+  method: POST
+  body:
+    title: wrong
+  status: 200
+  asserts:
+   - path: error
+     value: 400

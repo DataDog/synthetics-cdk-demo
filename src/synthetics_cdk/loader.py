@@ -1,3 +1,4 @@
+import json
 from urllib.parse import urlparse
 
 from cdktf_cdktf_provider_datadog import (
@@ -27,6 +28,7 @@ def build_tests(config, stack):
                     type="body",
                 )
             )
+        body = json.dumps(test_data["body"]) if "body" in test_data else None
         SyntheticsTest(
             stack,
             f"synthetics_test_{url.hostname}_{i}",
@@ -58,6 +60,7 @@ def build_tests(config, stack):
                     request_definition=SyntheticsTestApiStepRequestDefinition(
                         method=test_data["method"],
                         url=test_data["endpoint"],
+                        body=body,
                     ),
                 ),
             ],
